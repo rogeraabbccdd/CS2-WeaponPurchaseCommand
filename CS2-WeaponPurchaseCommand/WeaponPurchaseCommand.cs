@@ -164,6 +164,12 @@ namespace WeaponPurchaseCommand
                 return;
             }
 
+            if (client.PlayerPawn.Value == null || !client.PlayerPawn.Value.InBuyZone)
+            {
+                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You are not in buy zone!");
+                return;
+            }
+
             if (weaponConfig.PurchaseRestrict)
             {
                 client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} Weapon {ChatColors.Lime}{weapon}{ChatColors.Default} is restricted");
