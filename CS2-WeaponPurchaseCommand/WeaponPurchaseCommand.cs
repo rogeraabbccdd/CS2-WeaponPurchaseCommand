@@ -222,23 +222,27 @@ namespace WeaponPurchaseCommand
                 client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You have purchase {ChatColors.Lime}{weapon}{ChatColors.Default}.");
             }
 
-            client.ExecuteClientCommand("slot3");
-            client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot + 1}");
-
-            var activeweapon = client.PlayerPawn.Value!.WeaponServices!.ActiveWeapon;
-
-            if (activeweapon != null && activeweapon.Value!.DesignerName != "weapon_knife")
+            if (HasWeaponInSlot(client, (gear_slot_t)weaponConfig.WeaponSlot))
+            {
                 client.DropActiveWeapon();
-
-            client.GiveNamedItem(weaponConfig.WeaponEntity!);
-
-            client.InGameMoneyServices.Account = clientMoney - weaponConfig.PurchasePrice;
-            Utilities.SetStateChanged(client, "CCSPlayerController", "m_pInGameMoneyServices");
+                AddTimer(0.1f, () =>
+                {
+                    client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot}");
+                });
+            }
 
             AddTimer(0.2f, () =>
             {
-                client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot + 1}");
+                client.GiveNamedItem(weaponConfig.WeaponEntity!);
             });
+
+            AddTimer(0.3f, () =>
+            {
+                client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot}");
+            });
+
+            client.InGameMoneyServices.Account = clientMoney - weaponConfig.PurchasePrice;
+            Utilities.SetStateChanged(client, "CCSPlayerController", "m_pInGameMoneyServices");
 
             PlayerBuyList[client.Slot].IsCooldownNow = true;
 
@@ -279,6 +283,19 @@ namespace WeaponPurchaseCommand
                     return keyVar;
             }
             return "none";
+        }
+
+        public bool HasWeaponInSlot(CCSPlayerController player, gear_slot_t slot)
+        {
+            var weaponServices = player.PlayerPawn.Value?.WeaponServices;
+            if (weaponServices == null)
+                return false;
+
+            return weaponServices.MyWeapons.Any(weapon =>
+            {
+                var ccsWeaponBase = weapon.Value?.As<CCSWeaponBase>();
+                return ccsWeaponBase?.IsValid == true && ccsWeaponBase.VData?.GearSlot == slot;
+            });
         }
     }
 }
