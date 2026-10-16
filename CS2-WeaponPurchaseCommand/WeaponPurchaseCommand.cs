@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -29,6 +30,13 @@ namespace WeaponPurchaseCommand
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnClientPutInServer>(OnClientPutInServer);
             RegisterListener<Listeners.OnClientDisconnect>(OnClientDisconnect);
+
+            VirtualFunctions.CCSPlayer_WeaponServices_CanUseFunc.Hook(OnWeaponCanUse, HookMode.Pre);
+        }
+
+        public override void Unload(bool hotReload)
+        {
+            VirtualFunctions.CCSPlayer_WeaponServices_CanUseFunc.Unhook(OnWeaponCanUse, HookMode.Pre);
         }
 
         public void OnMapStart(string mapname)
@@ -47,9 +55,6 @@ namespace WeaponPurchaseCommand
             ConfigIsLoaded = true;
 
             InitialCommand();
-
-            MemoryFunctionWithReturn<CCSPlayer_WeaponServices, CBasePlayerWeapon, bool> CCSPlayer_WeaponServices_CanUseFunc = new(GameData.GetSignature("CCSPlayer_WeaponServices_CanUse"));
-            CCSPlayer_WeaponServices_CanUseFunc.Hook(OnWeaponCanUse, HookMode.Pre);
         }
 
         public void OnClientPutInServer(int playerSlot)
@@ -269,17 +274,20 @@ namespace WeaponPurchaseCommand
 
         public bool IsWeaponRestricted(string weaponKey)
         {
-            if (!PurchaseConfig!.WeaponConfigs.ContainsKey(weaponKey))
+            if (PurchaseConfig == null || !PurchaseConfig.WeaponConfigs.ContainsKey(weaponKey))
                 return false;
 
-            return PurchaseConfig!.WeaponConfigs[weaponKey].PurchaseRestrict;
+            return PurchaseConfig.WeaponConfigs[weaponKey].PurchaseRestrict;
         }
 
         public string GetWeaponKeyByEntityName(string entityName)
         {
-            foreach (string keyVar in PurchaseConfig!.WeaponConfigs.Keys)
+            if (PurchaseConfig == null)
+                return "none";
+
+            foreach (string keyVar in PurchaseConfig.WeaponConfigs.Keys)
             {
-                if (entityName == PurchaseConfig!.WeaponConfigs[keyVar].WeaponEntity)
+                if (entityName == PurchaseConfig.WeaponConfigs[keyVar].WeaponEntity)
                     return keyVar;
             }
             return "none";
