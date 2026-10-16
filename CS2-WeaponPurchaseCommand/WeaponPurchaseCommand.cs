@@ -324,7 +324,7 @@ public class ConfigFile
         List<string> commandlist = new List<string> { "css_glock" };
         WeaponConfigs = new Dictionary<string, WeaponConfig>(StringComparer.OrdinalIgnoreCase)
         {
-            { "Glock", new WeaponConfig(commandlist, "weapon_glock", 1, 100, 0, true) },
+            { "Glock", new WeaponConfig(commandlist, "weapon_glock", 1, 200, 0, true) },
         };
     }
 }
