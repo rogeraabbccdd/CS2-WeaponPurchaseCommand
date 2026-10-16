@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <None Update="lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="weapons.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
