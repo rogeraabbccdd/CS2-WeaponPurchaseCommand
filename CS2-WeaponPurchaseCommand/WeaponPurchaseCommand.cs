@@ -227,23 +227,23 @@ namespace WeaponPurchaseCommand
                 PrintMessage(client, "Purchase.Success", weapon);
             }
 
-            if (HasWeaponInSlot(client, (gear_slot_t)weaponConfig.WeaponSlot))
-            {
-                client.DropActiveWeapon();
-                AddTimer(0.1f, () =>
-                {
-                    client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot}");
-                });
-            }
+            var slot = (gear_slot_t)weaponConfig.WeaponSlot;
+            var slotCommand = $"slot{weaponConfig.WeaponSlot + 1}";
 
-            AddTimer(0.2f, () =>
+            var slotWeapon = GetWeaponInSlot(client, slot);
+            if (slotWeapon != null)
+                DropWeapon(client, slotWeapon);
+
+            Server.NextFrame(() =>
             {
-                client.GiveNamedItem(weaponConfig.WeaponEntity!);
+                if (client.IsValid)
+                    client.GiveNamedItem(weaponConfig.WeaponEntity!);
             });
 
-            AddTimer(0.3f, () =>
+            AddTimer(0.1f, () =>
             {
-                client.ExecuteClientCommand($"slot{weaponConfig.WeaponSlot}");
+                if (client.IsValid)
+                    client.ExecuteClientCommand(slotCommand);
             });
 
             client.InGameMoneyServices.Account = clientMoney - weaponConfig.PurchasePrice;
@@ -298,17 +298,30 @@ namespace WeaponPurchaseCommand
             client.PrintToChat($" {Localizer.ForPlayer(client, "Prefix")} {Localizer.ForPlayer(client, key, args)}");
         }
 
-        public bool HasWeaponInSlot(CCSPlayerController player, gear_slot_t slot)
+        public CBasePlayerWeapon? GetWeaponInSlot(CCSPlayerController player, gear_slot_t slot)
         {
             var weaponServices = player.PlayerPawn.Value?.WeaponServices;
             if (weaponServices == null)
-                return false;
+                return null;
 
-            return weaponServices.MyWeapons.Any(weapon =>
-            {
-                var ccsWeaponBase = weapon.Value?.As<CCSWeaponBase>();
-                return ccsWeaponBase?.IsValid == true && ccsWeaponBase.VData?.GearSlot == slot;
-            });
+            return weaponServices.MyWeapons
+                .Select(weapon => weapon.Value)
+                .FirstOrDefault(weapon =>
+                {
+                    var ccsWeaponBase = weapon?.As<CCSWeaponBase>();
+                    return ccsWeaponBase?.IsValid == true && ccsWeaponBase.VData?.GearSlot == slot;
+                });
+        }
+
+        // Drop a specific weapon without making the player switch to it first
+        private static void DropWeapon(CCSPlayerController player, CBasePlayerWeapon weapon)
+        {
+            var pawn = player.PlayerPawn.Value;
+            if (pawn?.WeaponServices == null || pawn.ItemServices == null)
+                return;
+
+            pawn.WeaponServices.ActiveWeapon.Raw = weapon.EntityHandle.Raw;
+            new CCSPlayer_ItemServices(pawn.ItemServices.Handle).DropActivePlayerWeapon(weapon);
         }
     }
 }
