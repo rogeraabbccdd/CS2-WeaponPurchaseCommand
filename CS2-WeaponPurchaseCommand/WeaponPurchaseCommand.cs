@@ -56,14 +56,20 @@ namespace WeaponPurchaseCommand
         {
             var client = Utilities.GetPlayerFromSlot(playerSlot);
 
-            PlayerBuyList.Add(client.Slot, new PurchaseHistory());
+            if (client != null)
+            {
+                PlayerBuyList.Add(client.Slot, new PurchaseHistory());
+            }
         }
 
         public void OnClientDisconnect(int playerSlot)
         {
             var client = Utilities.GetPlayerFromSlot(playerSlot);
 
-            PlayerBuyList.Remove(client.Slot);
+            if (client != null)
+            {
+                PlayerBuyList.Remove(client.Slot);
+            }
         }
 
         [GameEventHandler]
@@ -71,7 +77,7 @@ namespace WeaponPurchaseCommand
         {
             var client = @event.Userid;
 
-            if (PlayerBuyList.ContainsKey(client.Slot))
+            if (client != null && PlayerBuyList.ContainsKey(client.Slot))
                 PlayerBuyList[client.Slot].PlayerBuyHistory.Clear();
 
             return HookResult.Continue;
@@ -139,6 +145,11 @@ namespace WeaponPurchaseCommand
 
         public void PurchaseWeapon(CCSPlayerController client, string weapon)
         {
+            if (client == null)
+            {
+                return;
+            }
+
             var weaponConfig = PurchaseConfig!.WeaponConfigs[weapon];
 
             if (weaponConfig == null)
