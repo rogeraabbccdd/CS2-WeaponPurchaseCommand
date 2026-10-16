@@ -1,9 +1,9 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Memory.DynamicFunctions;
-using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -92,7 +92,7 @@ namespace WeaponPurchaseCommand
 
             foreach (string KeyValue in PurchaseConfig!.WeaponConfigs.Keys)
             {
-                client.PrintToChat($"Key: {KeyValue}");
+                client.PrintToChat(Localizer.ForPlayer(client, "WeaponList.Key", KeyValue));
 
                 string commandlist = "";
 
@@ -100,7 +100,7 @@ namespace WeaponPurchaseCommand
                 {
                     commandlist += commandValue + ",";
                 }
-                client.PrintToChat($"Command: {commandlist}");
+                client.PrintToChat(Localizer.ForPlayer(client, "WeaponList.Command", commandlist));
             }
         }
 
@@ -154,32 +154,32 @@ namespace WeaponPurchaseCommand
 
             if (weaponConfig == null)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} Invalid weapon!");
+                PrintMessage(client, "Purchase.InvalidWeapon");
                 return;
             }
 
             if (!client.PawnIsAlive)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} this feature need you to be alive!");
+                PrintMessage(client, "Purchase.NotAlive");
                 return;
             }
 
             if (client.PlayerPawn.Value == null || !client.PlayerPawn.Value.InBuyZone)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You are not in buy zone!");
+                PrintMessage(client, "Purchase.NotInBuyZone");
                 return;
             }
 
             if (weaponConfig.PurchaseRestrict)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} Weapon {ChatColors.Lime}{weapon}{ChatColors.Default} is restricted");
+                PrintMessage(client, "Purchase.Restricted", weapon);
                 return;
             }
 
             var cooldown = PurchaseConfig!.CooldownPurchase;
             if (cooldown > 0 && PlayerBuyList[client.Slot].IsCooldownNow)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} Your purchase is on cooldown now!");
+                PrintMessage(client, "Purchase.Cooldown");
                 return;
             }
 
@@ -187,7 +187,7 @@ namespace WeaponPurchaseCommand
 
             if (clientMoney < weaponConfig.PurchasePrice)
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You don't have enough money to purchase this weapon!");
+                PrintMessage(client, "Purchase.NotEnoughMoney");
                 return;
             }
 
@@ -200,7 +200,7 @@ namespace WeaponPurchaseCommand
                 {
                     if (weaponPurchased >= weaponConfig.PurchaseLimit)
                     {
-                        client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You have reached maximum purchase for {ChatColors.Lime}{weapon}{ChatColors.Default}, you can purchase again in next round");
+                        PrintMessage(client, "Purchase.LimitReached", weapon);
                         return;
                     }
                     else
@@ -214,12 +214,12 @@ namespace WeaponPurchaseCommand
                     PlayerBuyList[client.Slot].PlayerBuyHistory.Add(weapon, 1);
                 }
 
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You have purchase {ChatColors.Lime}{weapon}{ChatColors.Default}, Purchase Limit: {ChatColors.Green}{weaponConfig.PurchaseLimit - weaponPurchased - 1}/{weaponConfig.PurchaseLimit}");
+                PrintMessage(client, "Purchase.SuccessWithLimit", weapon, weaponConfig.PurchaseLimit - weaponPurchased - 1, weaponConfig.PurchaseLimit);
             }
 
             else
             {
-                client.PrintToChat($" {ChatColors.Green}[Weapon]{ChatColors.Default} You have purchase {ChatColors.Lime}{weapon}{ChatColors.Default}.");
+                PrintMessage(client, "Purchase.Success", weapon);
             }
 
             if (HasWeaponInSlot(client, (gear_slot_t)weaponConfig.WeaponSlot))
@@ -283,6 +283,11 @@ namespace WeaponPurchaseCommand
                     return keyVar;
             }
             return "none";
+        }
+
+        private void PrintMessage(CCSPlayerController client, string key, params object[] args)
+        {
+            client.PrintToChat($" {Localizer.ForPlayer(client, "Prefix")} {Localizer.ForPlayer(client, key, args)}");
         }
 
         public bool HasWeaponInSlot(CCSPlayerController player, gear_slot_t slot)

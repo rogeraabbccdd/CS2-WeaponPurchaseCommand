@@ -1,0 +1,14 @@
+{
+  "Prefix": "{green}[Weapon]{default}",
+  "WeaponList.Key": "Key: {0}",
+  "WeaponList.Command": "Command: {0}",
+  "Purchase.InvalidWeapon": "Invalid weapon!",
+  "Purchase.NotAlive": "This feature requires you to be alive!",
+  "Purchase.NotInBuyZone": "You are not in buy zone!",
+  "Purchase.Restricted": "Weapon {lime}{0}{default} is restricted",
+  "Purchase.Cooldown": "Your purchase is on cooldown now!",
+  "Purchase.NotEnoughMoney": "You don't have enough money to purchase this weapon!",
+  "Purchase.LimitReached": "You have reached maximum purchase for {lime}{0}{default}, you can purchase again in next round",
+  "Purchase.SuccessWithLimit": "You have purchased {lime}{0}{default}, Purchase Limit: {green}{1}/{2}",
+  "Purchase.Success": "You have purchased {lime}{0}{default}."
+}

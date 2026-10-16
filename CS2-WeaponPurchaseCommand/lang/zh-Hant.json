@@ -1,0 +1,14 @@
+{
+  "Prefix": "{green}[武器]{default}",
+  "WeaponList.Key": "武器：{0}",
+  "WeaponList.Command": "指令：{0}",
+  "Purchase.InvalidWeapon": "無效的武器！",
+  "Purchase.NotAlive": "你必須存活才能使用此功能！",
+  "Purchase.NotInBuyZone": "你不在購買區內！",
+  "Purchase.Restricted": "武器 {lime}{0}{default} 已被禁止購買",
+  "Purchase.Cooldown": "購買冷卻中，請稍後再試！",
+  "Purchase.NotEnoughMoney": "你的金錢不足以購買此武器！",
+  "Purchase.LimitReached": "你已達到 {lime}{0}{default} 的購買上限，下回合才能再次購買",
+  "Purchase.SuccessWithLimit": "你購買了 {lime}{0}{default}，剩餘購買次數：{green}{1}/{2}",
+  "Purchase.Success": "你購買了 {lime}{0}{default}。"
+}
